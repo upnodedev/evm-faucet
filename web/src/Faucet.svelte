@@ -26,9 +26,7 @@
     hcaptchaLoaded = true;
   };
 
-  $: document.title = `${faucetInfo.symbol} ${capitalize(
-    faucetInfo.network,
-  )} Faucet`;
+  $: document.title = `Modular Games Faucet`;
 
   let widgetID;
   $: if (mounted && hcaptchaLoaded) {
@@ -108,6 +106,7 @@
 </script>
 
 <svelte:head>
+  <title>Modular Games Faucet</title>
   {#if mounted && faucetInfo.hcaptcha_sitekey}
     <script
       src="https://hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit"
@@ -127,7 +126,7 @@
               <span class="icon">
                 <i class="fa fa-bath" />
               </span>
-              <span><b>{faucetInfo.symbol} Faucet</b></span>
+              <span><b>Modular Games {faucetInfo.symbol} Faucet</b></span>
             </a>
           </div>
           <div id="navbarMenu" class="navbar-menu">
@@ -167,7 +166,7 @@
                   bind:value={input}
                   class="input is-rounded"
                   type="text"
-                  placeholder="Enter your address or ENS name"
+                  placeholder="Enter your address"
                 />
               </p>
               <p class="control">

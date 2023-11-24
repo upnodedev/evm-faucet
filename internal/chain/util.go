@@ -1,14 +1,21 @@
 package chain
 
 import (
+	"math"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
-func EtherToWei(amount int64) *big.Int {
-	ether := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
-	return new(big.Int).Mul(big.NewInt(amount), ether)
+func EtherToWei(amount float64) *big.Int {
+	//ether := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
+	//return new(big.Int).Mul(big.NewInt(amount), ether)
+	wei := math.Pow10(18) * amount
+	weiAmount := new(big.Float)
+	weiAmount.SetFloat64(wei)
+	result := new(big.Int)
+	weiAmount.Int(result)
+	return result
 }
 
 func Has0xPrefix(str string) bool {
