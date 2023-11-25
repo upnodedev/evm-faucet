@@ -3,6 +3,7 @@ package server
 import (
 	"errors"
 	"fmt"
+	"math"
 	"net"
 	"net/http"
 	"strings"
@@ -51,12 +52,42 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 
 	clintIP := getClientIPFromRequest(l.proxyCount, r)
 	l.mutex.Lock()
-	if l.limitByKey(w, address) || l.limitByKey(w, clintIP) {
+
+	if l.limitByKey(w, address) {
 		l.mutex.Unlock()
 		return
 	}
+
+	if l.checklimitByKey(w, clintIP).Seconds() > 0 {
+		ttl := min(
+			l.checklimitByKey(w, clintIP+"-0").Seconds(),
+			l.checklimitByKey(w, clintIP+"-1").Seconds(),
+			l.checklimitByKey(w, clintIP+"-2").Seconds(),
+			l.checklimitByKey(w, clintIP+"-3").Seconds(),
+		)
+
+		if ttl > 0 {
+			errMsg := fmt.Sprintf("You have exceeded the rate limit. Please wait %s before you try again", math.Round(ttl))
+			renderJSON(w, claimResponse{Message: errMsg}, http.StatusTooManyRequests)
+
+			l.mutex.Unlock()
+			return
+		}
+	}
+
 	l.cache.SetWithTTL(address, true, l.ttl)
 	l.cache.SetWithTTL(clintIP, true, l.ttl)
+
+	if l.checklimitByKey(w, clintIP+"-0").Seconds() <= 0 {
+		l.cache.SetWithTTL(clintIP+"-0", true, l.ttl)
+	} else if l.checklimitByKey(w, clintIP+"-1").Seconds() <= 0 {
+		l.cache.SetWithTTL(clintIP+"-1", true, l.ttl)
+	} else if l.checklimitByKey(w, clintIP+"-2").Seconds() <= 0 {
+		l.cache.SetWithTTL(clintIP+"-2", true, l.ttl)
+	} else if l.checklimitByKey(w, clintIP+"-3").Seconds() <= 0 {
+		l.cache.SetWithTTL(clintIP+"-3", true, l.ttl)
+	}
+
 	l.mutex.Unlock()
 
 	next.ServeHTTP(w, r)
@@ -69,6 +100,13 @@ func (l *Limiter) ServeHTTP(w http.ResponseWriter, r *http.Request, next http.Ha
 		"address":  address,
 		"clientIP": clintIP,
 	}).Info("Maximum request limit has been reached")
+}
+
+func (l *Limiter) checklimitByKey(w http.ResponseWriter, key string) time.Duration {
+	if _, ttl, err := l.cache.GetWithTTL(key); err == nil {
+		return ttl
+	}
+	return 0
 }
 
 func (l *Limiter) limitByKey(w http.ResponseWriter, key string) bool {
