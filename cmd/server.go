@@ -8,6 +8,7 @@ import (
 	"math/big"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/crypto"
@@ -26,7 +27,7 @@ var (
 
 	payoutFlag   = flag.Float64("faucet.amount", 1, "Number of Ethers to transfer per user request")
 	intervalFlag = flag.Int("faucet.minutes", 1440, "Number of minutes to wait between funding rounds")
-	netnameFlag  = flag.String("faucet.name", "testnet", "Network name to display on the frontend")
+	netnameFlag  = flag.String("faucet.name", os.Getenv("FAUCET_NAME"), "Network name to display on the frontend")
 	symbolFlag   = flag.String("faucet.symbol", "ETH", "Token symbol to display on the frontend")
 
 	keyJSONFlag  = flag.String("wallet.keyjson", os.Getenv("KEYSTORE"), "Keystore file to fund user requests with")
@@ -60,7 +61,20 @@ func Execute() {
 	if err != nil {
 		panic(fmt.Errorf("cannot connect to web3 provider: %w", err))
 	}
-	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, *intervalFlag, *payoutFlag, *proxyCntFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
+
+	var payoutAmount = *payoutFlag
+	var payoutInterval = *intervalFlag
+
+	if os.Getenv("FAUCET_AMOUNT") != "" {
+		payoutAmount, _ = strconv.ParseFloat(os.Getenv("FAUCET_AMOUNT"), 64)
+	}
+
+	if os.Getenv("FAUCET_INTERVAL") != "" {
+		payoutInterval_, _ := strconv.ParseInt(os.Getenv("FAUCET_INTERVAL"), 10, 64)
+		payoutInterval = int(payoutInterval_)
+	}
+
+	config := server.NewConfig(*netnameFlag, *symbolFlag, *httpPortFlag, payoutInterval, payoutAmount, *proxyCntFlag, *hcaptchaSiteKeyFlag, *hcaptchaSecretFlag)
 	go server.NewServer(txBuilder, config).Run()
 
 	c := make(chan os.Signal, 1)

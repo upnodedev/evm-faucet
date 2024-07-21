@@ -24,6 +24,7 @@ type infoResponse struct {
 	Account         string `json:"account"`
 	Network         string `json:"network"`
 	Payout          string `json:"payout"`
+	Interval        int    `json:"interval"`
 	Symbol          string `json:"symbol"`
 	HcaptchaSiteKey string `json:"hcaptcha_sitekey,omitempty"`
 }

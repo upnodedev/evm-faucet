@@ -58,6 +58,10 @@ go build -o eth-faucet
 
 You can configure the funder by using environment variables instead of command-line flags as follows:
 ```bash
+export FAUCET_NAME=Chain Name
+export FAUCET_AMOUNT=0.001
+export FAUCET_INTERVAL=1440
+
 export WEB3_PROVIDER=rpc endpoint
 export PRIVATE_KEY=hex private key
 ```
@@ -65,6 +69,7 @@ export PRIVATE_KEY=hex private key
 or
 
 ```bash
+export FAUCET_NAME=Chain Name
 export WEB3_PROVIDER=rpc endpoint
 export KEYSTORE=keystore path
 echo "your keystore password" > `pwd`/password.txt

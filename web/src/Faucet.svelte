@@ -9,6 +9,7 @@
     account: '0x0000000000000000000000000000000000000000',
     network: 'testnet',
     payout: 1,
+    interval: 1440,
     symbol: 'ETH',
     hcaptcha_sitekey: '',
   };
@@ -26,7 +27,7 @@
     hcaptchaLoaded = true;
   };
 
-  $: document.title = `Modular Games Faucet`;
+  $: document.title = `Upnode Faucet`;
 
   let widgetID;
   $: if (mounted && hcaptchaLoaded) {
@@ -103,10 +104,30 @@
     const lower = str.toLowerCase();
     return str.charAt(0).toUpperCase() + lower.slice(1);
   }
+
+  function intervalText(interval) {
+    let result = ""
+
+    if (interval >= 1440 && interval > 0) {
+      result += Math.floor(interval / 1440) + ' days'
+      interval = interval % 1440
+    }
+
+    if (interval >= 60 && interval > 0) {
+      result += Math.floor(interval / 60) + ' hours'
+      interval = interval % 60
+    }
+
+    if (interval > 0) {
+      result += Math.floor(interval) + ' minutes'
+    }
+
+    return result
+  }
 </script>
 
 <svelte:head>
-  <title>Modular Games Faucet</title>
+  <title>{faucetInfo.network} Faucet</title>
   {#if mounted && faucetInfo.hcaptcha_sitekey}
     <script
       src="https://hcaptcha.com/1/api.js?onload=hcaptchaOnLoad&render=explicit"
@@ -118,7 +139,7 @@
 
 <main>
   <section class="hero is-info is-fullheight">
-    <div class="hero-head">
+    <!-- <div class="hero-head">
       <nav class="navbar">
         <div class="container">
           <div class="navbar-brand">
@@ -126,7 +147,7 @@
               <span class="icon">
                 <i class="fa fa-bath" />
               </span>
-              <span><b>Modular Games {faucetInfo.symbol} Faucet</b></span>
+              <span><b>{faucetInfo.network} Faucet</b></span>
             </a>
           </div>
           <div id="navbarMenu" class="navbar-menu">
@@ -146,20 +167,19 @@
           </div>
         </div>
       </nav>
-    </div>
+    </div> -->
 
     <div class="hero-body">
       <div class="container has-text-centered">
-        <div class="column is-6 is-offset-3">
+        <div class="column wrapper">
           <h1 class="title">
-            Receive {faucetInfo.payout}
-            {faucetInfo.symbol} per request
+            {faucetInfo.network} Faucet
           </h1>
           <h2 class="subtitle">
-            Serving from {faucetInfo.account}
+            {faucetInfo.payout} {faucetInfo.symbol} per {intervalText(faucetInfo.interval)}
           </h2>
           <div id="hcaptcha" data-size="invisible"></div>
-          <div class="box">
+          <div class="">
             <div class="field is-grouped">
               <p class="control is-expanded">
                 <input
@@ -172,13 +192,17 @@
               <p class="control">
                 <button
                   on:click={handleRequest}
-                  class="button is-primary is-rounded"
+                  class="button is-info is-rounded"
                 >
                   Request
                 </button>
               </p>
             </div>
           </div>
+
+          <div class="mt-6">Serving from</div>
+          <div class="is-size-7-mobile">{faucetInfo.account}</div>
+          <div class="mt-3">Powered by <a href="https://upnode.org" target="_blank">Upnode</a></div>
         </div>
       </div>
     </div>
@@ -187,9 +211,7 @@
 
 <style>
   .hero.is-info {
-    background:
-      linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-      url('/background.jpg') no-repeat center center fixed;
+    background: darkblue;
     -webkit-background-size: cover;
     -moz-background-size: cover;
     -o-background-size: cover;
@@ -199,7 +221,8 @@
     padding: 3rem 0;
     line-height: 1.5;
   }
-  .box {
-    border-radius: 19px;
+  .wrapper {
+    max-width: 640px;
+    margin: auto;
   }
 </style>

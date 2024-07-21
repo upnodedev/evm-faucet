@@ -81,8 +81,8 @@ func (s *Server) handleInfo() http.HandlerFunc {
 			Account:         s.Sender().String(),
 			Network:         s.cfg.network,
 			Symbol:          s.cfg.symbol,
-//			Payout:          strconv.Itoa(s.cfg.payout),
 			Payout:          strconv.FormatFloat(s.cfg.payout, 'f', -1, 64),
+			Interval:        s.cfg.interval,
 			HcaptchaSiteKey: s.cfg.hcaptchaSiteKey,
 		}, http.StatusOK)
 	}
